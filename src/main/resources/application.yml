@@ -1,0 +1,22 @@
+# 应用服务 WEB 访问端口
+server:
+  port: 8080
+
+spring:
+  application:
+    name: MinIo_LoadBalance
+  # 配置文件上传大小限制
+  servlet:
+    multipart:
+      max-file-size: 200MB
+      max-request-size: 200MB
+
+minio:
+  endpoint: http://192.168.196.150:9889,//
+  accessKey: admin
+  secretKey: 12345678
+  bucketName: test
+
+
+
+
