@@ -12,7 +12,7 @@ spring:
       max-request-size: 200MB
 
 minio:
-  endpoint: http://192.168.196.150:9889,//
+  endpoint: http://192.168.196.150:9889
   accessKey: admin
   secretKey: 12345678
   bucketName: test
