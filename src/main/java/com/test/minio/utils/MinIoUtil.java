@@ -2,6 +2,7 @@ package com.test.minio.utils;
 
 import com.test.minio.entity.ObjectItem;
 import io.minio.*;
+import io.minio.errors.*;
 import io.minio.messages.DeleteError;
 import io.minio.messages.DeleteObject;
 import io.minio.messages.Item;
@@ -20,6 +21,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -29,7 +32,10 @@ import java.util.stream.Collectors;
 public class MinIoUtil {
 
     @Autowired
-    private MinioClient minioClient;
+    private LoadBalanceMinioClient loadBalanceMinioClient;
+
+/*    @Autowired
+    private loadBalanceMinioClient.getMinioClient() loadBalanceMinioClient.getMinioClient();*/
 
     @Value("${minio.bucketName}")
     private String bucketName;
@@ -41,13 +47,40 @@ public class MinIoUtil {
     @Deprecated //不推荐 但可以使用
     public void existBucket(String name) {
         try {
-            boolean exists = minioClient.bucketExists(BucketExistsArgs.builder().bucket(name).build());
+            boolean exists = loadBalanceMinioClient.getMinioClient().bucketExists(BucketExistsArgs.builder().bucket(name).build());
             if (!exists) {
-                minioClient.makeBucket(MakeBucketArgs.builder().bucket(name).build());
+                loadBalanceMinioClient.getMinioClient().makeBucket(MakeBucketArgs.builder().bucket(name).build());
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public boolean bucketExist(String name){
+        try {
+            return loadBalanceMinioClient.getMinioClient().bucketExists(BucketExistsArgs.builder().bucket(name).build());
+        } catch (ErrorResponseException e) {
+            e.printStackTrace();
+        } catch (InsufficientDataException e) {
+            e.printStackTrace();
+        } catch (InternalException e) {
+            e.printStackTrace();
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        } catch (InvalidResponseException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (ServerException e) {
+            e.printStackTrace();
+        } catch (XmlParserException e) {
+            e.printStackTrace();
+        } catch (InvalidBucketNameException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     /**
@@ -57,7 +90,7 @@ public class MinIoUtil {
      */
     public Boolean makeBucket(String bucketName) {
         try {
-            minioClient.makeBucket(MakeBucketArgs.builder()
+            loadBalanceMinioClient.getMinioClient().makeBucket(MakeBucketArgs.builder()
                     .bucket(bucketName)
                     .build());
         } catch (Exception e) {
@@ -74,7 +107,7 @@ public class MinIoUtil {
      */
     public Boolean removeBucket(String bucketName) {
         try {
-            minioClient.removeBucket(RemoveBucketArgs.builder()
+            loadBalanceMinioClient.getMinioClient().removeBucket(RemoveBucketArgs.builder()
                     .bucket(bucketName)
                     .build());
         } catch (Exception e) {
@@ -103,7 +136,7 @@ public class MinIoUtil {
             InputStream in = null;
             try {
                 in = file.getInputStream();
-                minioClient.putObject(PutObjectArgs.builder()
+                loadBalanceMinioClient.getMinioClient().putObject(PutObjectArgs.builder()
                         .bucket(bucketName)
                         .object(fileName)
                         .stream(in, in.available(), -1)
@@ -137,7 +170,7 @@ public class MinIoUtil {
         InputStream in = null;
         ByteArrayOutputStream out = null;
         try {
-            in = minioClient.getObject(GetObjectArgs.builder().bucket(bucketName).object(fileName).build());
+            in = loadBalanceMinioClient.getMinioClient().getObject(GetObjectArgs.builder().bucket(bucketName).object(fileName).build());
             out = new ByteArrayOutputStream();
             IOUtils.copy(in, out);
             //封装返回值
@@ -179,7 +212,7 @@ public class MinIoUtil {
      * @return 存储bucket内文件对象信息
      */
     public List<ObjectItem> listObjects(String bucketName) {
-        Iterable<Result<Item>> results = minioClient.listObjects(
+        Iterable<Result<Item>> results = loadBalanceMinioClient.getMinioClient().listObjects(
                 ListObjectsArgs.builder().bucket(bucketName).build());
         List<ObjectItem> objectItems = new ArrayList<>();
         try {
@@ -204,7 +237,7 @@ public class MinIoUtil {
      */
     public Iterable<Result<DeleteError>> removeObjects(String bucketName, List<String> objects) {
         List<DeleteObject> dos = objects.stream().map(e -> new DeleteObject(e)).collect(Collectors.toList());
-        Iterable<Result<DeleteError>> results = minioClient.removeObjects(RemoveObjectsArgs.builder().bucket(bucketName).objects(dos).build());
+        Iterable<Result<DeleteError>> results = loadBalanceMinioClient.getMinioClient().removeObjects(RemoveObjectsArgs.builder().bucket(bucketName).objects(dos).build());
         return results;
     }
 }

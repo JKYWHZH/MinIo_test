@@ -13,7 +13,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <spring-boot.version>2.3.7.RELEASE</spring-boot.version>
-        <minio.version>8.0.3</minio.version>
+        <spring-cloud.version>Hoxton.SR12</spring-cloud.version>
+        <minio.version>7.1.5-DEV</minio.version>
+        <!--<minio.version>8.0.3</minio.version>-->
     </properties>
 
     <dependencies>
